@@ -1,0 +1,11 @@
+<%= form_for(:content, :url => "/create") do |f|%>
+title:
+  <%= f.text_field :title, :placeholder => "タイトルを入力" %>
+  <br>
+  comment:
+  <%= f.text_area :body, :placeholder => "コメントを入力" %>
+  <br>
+  <%= f.datetime_select :time %>
+  <br>
+  <%= f.submit "プッシュ" %>
+<% end %>

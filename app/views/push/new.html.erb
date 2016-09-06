@@ -1,11 +1,18 @@
-<%= form_for(:content, :url => "/create") do |f|%>
+<%= form_tag(@push) do |f|%>
 title:
-  <%= f.text_field :title, :placeholder => "タイトルを入力" %>
+  <%= text_field nil, :title, :placeholder => "タイトルを入力" %>
   <br>
   comment:
-  <%= f.text_area :body, :placeholder => "コメントを入力" %>
+  <%= text_area nil, :body, :placeholder => "コメントを入力" %>
   <br>
-  <%= f.datetime_select :time %>
+  button:
   <br>
-  <%= f.submit "プッシュ" %>
+  action1_button
+  <%= check_box nil, :action1_button, {}, true, false %>
+  action2_button
+  <%= check_box nil, :action2_button, {}, true, false %>
+  <br>
+  <%= datetime_select :time, :time %>
+  <br>
+  <%= submit_tag "プッシュ" %>
 <% end %>

@@ -11,14 +11,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160531104805) do
+ActiveRecord::Schema.define(version: 20160601134509) do
 
-  create_table "plans", force: :cascade do |t|
-    t.string   "title"
-    t.text     "content"
-    t.datetime "time"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table "pushes", force: :cascade do |t|
+    t.string   "jwt"
+    t.string   "crypto_key"
+    t.string   "encryption_data"
+    t.string   "end_point"
+    t.string   "salt"
+    t.datetime "send_time"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
 end

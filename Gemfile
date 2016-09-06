@@ -23,9 +23,15 @@ gem 'jbuilder', '~> 2.0'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0', group: :doc
 
+gem 'rename'
+
 gem "gcm"
 
-gem "rake", '~> 10.5.0'
+gem "rake"
+
+gem 'whenever', :require => false
+
+gem 'jwt'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'

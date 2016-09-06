@@ -1,5 +1,7 @@
 
 class PushController < ApplicationController
+
+	include PushHelper
 	require 'net/http'
 	require "open-uri"
 	require 'openssl'
@@ -8,10 +10,18 @@ class PushController < ApplicationController
 	include OpenSSL
 
 	def new
-
+		@push = Push.new
+		logger.info DateTime.now
 	end
 
 	def index
+		ecdsa_key = OpenSSL::PKey::EC.new('prime256v1')
+		ecdsa_key.generate_key
+		ecdsa_public = OpenSSL::PKey::EC.new(ecdsa_key)
+		ecdsa_public.private_key = nil
+		@public_key = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
+		$public_key = ecdsa_public.public_key.to_s
+		$p256ecdsa = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
 	end
 
 	def push_data
@@ -43,6 +53,7 @@ class PushController < ApplicationController
 	  secret_key = OpenSSL::HMAC.digest("sha256", prk, "Content-Encoding: aesgcm\x00#{context}\x01").byteslice(0, 16)
 	  nonce = OpenSSL::HMAC.digest("sha256", prk, "Content-Encoding: nonce\x00#{context}\x01").byteslice(0, 12)
 	  $secret_key = secret_key
+	  logger.info secret_key
 	  $nonce = nonce
 	  $s = s
 	  $salt = salt
@@ -50,8 +61,17 @@ class PushController < ApplicationController
 	end
 
 	def create
-		title = params[:content][:title]
-		body = params[:content][:body]
+		title = params[:title]
+		body = params[:body]
+		action1 = params[:action1_button]
+		action2 = params[:action2_button]
+		time = params[:time]
+		send_time = DateTime.new(time['time(1i)'].to_i, time['time(2i)'].to_i, time['time(3i)'].to_i, time['time(4i)'].to_i, time['time(5i)'].to_i, 0)
+		send_time -= 9.hours
+		logger.info "title: #{title}"
+		logger.info "body: #{body}"
+		logger.info "action1: #{action1}"
+		logger.info "time: #{send_time}"
 
 		secret_key = $secret_key
 		nonce = $nonce
@@ -63,7 +83,9 @@ class PushController < ApplicationController
 		data = {
 			registration_ids: "#{$endpoint}",
 			title: title,
-			body: body
+			body: body,
+			button1: action1,
+			button2: action2
 		}.to_json
 
 		iv = $nonce
@@ -74,25 +96,35 @@ class PushController < ApplicationController
 		encrypted_data << enc.final
 		encrypted_data << enc.auth_tag
 
-    uri = URI.parse("https://gcm-http.googleapis.com/gcm/#{$endpoint}")
-    logger.info "https://gcm-http.googleapis.com/gcm/#{$endpoint}"
-    http = Net::HTTP.new(uri.host, uri.port)
 
-    http.use_ssl = true
-    request = Net::HTTP::Post.new(uri.request_uri)
+		@push = Push.create(
+			jwt: $public_key,
+			crypto_key: "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))};p256ecdsa=#{$p256ecdsa}",
+			encryption_data: Base64.urlsafe_encode64(encrypted_data),
+			end_point: $endpoint,
+			salt: "keyid=p256dh;salt=#{Base64.urlsafe_encode64(salt.to_bn.to_s(2))}",
+			send_time: send_time
+		)
 
-    request["Content-Length"] = encrypted_data.length.to_s
-    request["Authorization"] = "key=(end_point)"
-    request["Content-Type"] = "application/octet-stream"
-    request["Crypto-Key"] = "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))}"
-    request["Encryption"] = "keyid=p256dh;salt=#{Base64.urlsafe_encode64(salt.to_bn.to_s(2))}"
-    request["Content-Encoding"] = "aesgcm"
-    request["TTL"] = "10"
-		request.body = encrypted_data
+  #   uri = URI.parse("https://gcm-http.googleapis.com/gcm/#{$endpoint}")
+  #   logger.info "https://gcm-http.googleapis.com/gcm/#{$endpoint}"
+  #   http = Net::HTTP.new(uri.host, uri.port)
+
+  #   http.use_ssl = true
+  #   request = Net::HTTP::Post.new(uri.request_uri)
+
+  #   request["Content-Length"] = encrypted_data.length.to_s
+  #   request["Authorization"] = "key=AIzaSyDzQwhBttYFxuV9XeBZyJfU2nuZsbwrpiM"
+  #   request["Content-Type"] = "application/octet-stream"
+  #   request["Crypto-Key"] = "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))}"
+  #   request["Encryption"] = "keyid=p256dh;salt=#{Base64.urlsafe_encode64(salt.to_bn.to_s(2))}"
+  #   request["Content-Encoding"] = "aesgcm"
+  #   request["TTL"] = "10"
+		# request.body = encrypted_data
 
 
-		response = http.request(request)
-		logger.info("output: #{response.body}")
+		# response = http.request(request)
+		# logger.info("output: #{response.body}")
 
 
 		redirect_to "/"

@@ -1,16 +1,23 @@
 self.addEventListener("push", function(event){
-  data = event.data.json();
+  var data = event.data.json();
   if(event.data){
+    var action = [];
+    if(data.button1 == "true"){
+      var action1 = {action: "action1", title: "action1"}
+      action.push(action1);
+    }
+    if(data.button2 == "true") {
+      var action2 = {action: "action2", title: "action2"}
+      action.push(action2);
+    }
+    console.log(action.constructor);
     event.waitUntil(
       self.registration.showNotification(data.title,{
         body: data.body,
         tag: "タグ",
         icon: "http://example.com/icon.png",
         vibrate: [200, 100, 200, 100, 200, 100, 200],
-        actions: [
-          {action: 'action1', title: "action1"},
-          {action: 'action2', title: "action2"}
-        ]
+        actions: action
       })
     )
   }

@@ -20,15 +20,17 @@ class PushController < ApplicationController
 		ecdsa_public = OpenSSL::PKey::EC.new(ecdsa_key)
 		ecdsa_public.private_key = nil
 		@public_key = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
-		$public_key = ecdsa_public.public_key.to_s
+		$private_key = Base64.urlsafe_encode64(ecdsa_key.private_key.to_s(2))
 		$p256ecdsa = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
+		logger.info ecdsa_public.public_key.to_bn.num_bytes
+		logger.info ecdsa_key.private_key.num_bytes
 	end
 
 	def push_data
 		before_key = params[:key] #1_key ブラウザ公開鍵を取得
 		before_auth = params[:auth] #1_auth　authを取得
 		endpoint = params[:endpoint] # endpointを取得
-		$endpoint = endpoint.match(/https:\/\/android.googleapis.com\/gcm\/send\/([^\.]*)/)[1] #endpointからregistration_idを取得
+		$endpoint = endpoint.match(/https:\/\/fcm.googleapis.com\/fcm\/send\/([^\.]*)/)[1] #endpointからregistration_idを取得
 
 		key = Base64.urlsafe_decode64(before_key) #1_key ブラウザ公開鍵をBase64デコーディング
 		auth = Base64.urlsafe_decode64(before_auth) #1_auth authを取得してBase64デコーディング
@@ -53,7 +55,6 @@ class PushController < ApplicationController
 	  secret_key = OpenSSL::HMAC.digest("sha256", prk, "Content-Encoding: aesgcm\x00#{context}\x01").byteslice(0, 16)
 	  nonce = OpenSSL::HMAC.digest("sha256", prk, "Content-Encoding: nonce\x00#{context}\x01").byteslice(0, 12)
 	  $secret_key = secret_key
-	  logger.info secret_key
 	  $nonce = nonce
 	  $s = s
 	  $salt = salt
@@ -98,7 +99,7 @@ class PushController < ApplicationController
 
 
 		@push = Push.create(
-			jwt: $public_key,
+			jwt: $private_key,
 			crypto_key: "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))};p256ecdsa=#{$p256ecdsa}",
 			encryption_data: Base64.urlsafe_encode64(encrypted_data),
 			end_point: $endpoint,

@@ -19,13 +19,14 @@ function subscribe() {
     console.log('プッシュ通知が有効ではありません');
     return;
   }
-  var public_key = new Uint8Array(document.getElementById('public_key').textContent.replace(/\-/g, '+').replace(/\_/g, '/'));
+  var public_key = new Uint8Array(string_to_buffer(atob(document.getElementById('public_key').textContent.replace(/\-/g, '+').replace(/\_/g, '/'))));
   // public_keyをurlsafedecodeする
-  console.log("pub_key" + public_key);
+  console.log("pub_key" + atob(document.getElementById('public_key').textContent.replace(/\-/g, '+').replace(/\_/g, '/')));
 
   navigator.serviceWorker.ready.then((sw) => {
     sw.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: public_key}).then((s) => {
       // ここでPushのエンドポイントが取得できる
+      console.log(s.endpoint);
       fetch("/push_data", {
         credentials: 'include',
         method: 'POST',
@@ -43,7 +44,7 @@ function subscribe() {
 };
 
 function string_to_buffer(src) {
-  return (new Uint16Array([].map.call(src, function(c) {
+  return (new Uint8Array([].map.call(src, function(c) {
     return c.charCodeAt(0)
   }))).buffer;
 }

@@ -6,12 +6,9 @@ require 'openssl'
 namespace :push do
 	desc ""
 	task :send => :environment do
-		pushes = Push.all
-		puts Time.now
+		pushes = Push.where("send_time >= ?", DateTime.now - 24.hours)
 		pushes.each do |push|
 			jwt_bn = OpenSSL::BN.new(Base64.urlsafe_decode64(push.jwt), 2)
-			# jwt_group = OpenSSL::PKey::EC::Group.new("prime256v1")
-			# jwt_pubkey = OpenSSL::PKey::EC::Point.new(jwt_group, jwt_bn)  # ここでエラー発生
 			jwt_key = OpenSSL::PKey::EC.new("prime256v1")
 			puts Time.now.to_f / 1000.floor + 86400
 			jwt_key.private_key = jwt_bn
@@ -20,14 +17,6 @@ namespace :push do
 				exp: Time.now.to_f.floor + 86400,
 			}
 			token = JWT.encode(payload, jwt_key, 'ES256')
-			pub_g = OpenSSL::PKey::EC::Group.new("prime256v1")
-			pub_bn = OpenSSL::BN.new(Base64.urlsafe_decode64("BIwrAQUrFsrtKhZg-tafFp5l_NDNTqIAKImaUaQYV16-umLKbwDywO3fIbwzDg07_RgxRphZj9erP0BMcE9V0cE="), 2)
-			pub_p = OpenSSL::PKey::EC::Point.new(pub_g, pub_bn)
-			ecdsa_public = OpenSSL::PKey::EC.new("prime256v1")
-			ecdsa_public.public_key = pub_p
-			#decoded_token = JWT.decode token, ecdsa_public, true, { :algorithm => 'ES256' }
-			#puts decoded_token
-			puts Base64.decode64(token.split(".")[2]).length
 			uri = URI.parse("https://fcm.googleapis.com/fcm/send/#{push.end_point}")
 	    http = Net::HTTP.new(uri.host, uri.port)
 	    encrypted_data = Base64.urlsafe_decode64(push.encryption_data)
@@ -47,10 +36,9 @@ namespace :push do
 
 
 			response = http.request(request)
-			if response.code == 200
+			if response.code == "201"
 				push.destroy
 			end
-			puts response.body
 		end
 	end
 end

@@ -105,27 +105,6 @@ class PushController < ApplicationController
 			send_time: send_time
 		)
 
-  #   uri = URI.parse("https://gcm-http.googleapis.com/gcm/#{$endpoint}")
-  #   logger.info "https://gcm-http.googleapis.com/gcm/#{$endpoint}"
-  #   http = Net::HTTP.new(uri.host, uri.port)
-
-  #   http.use_ssl = true
-  #   request = Net::HTTP::Post.new(uri.request_uri)
-
-  #   request["Content-Length"] = encrypted_data.length.to_s
-  #   request["Authorization"] = "key=AIzaSyDzQwhBttYFxuV9XeBZyJfU2nuZsbwrpiM"
-  #   request["Content-Type"] = "application/octet-stream"
-  #   request["Crypto-Key"] = "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))}"
-  #   request["Encryption"] = "keyid=p256dh;salt=#{Base64.urlsafe_encode64(salt.to_bn.to_s(2))}"
-  #   request["Content-Encoding"] = "aesgcm"
-  #   request["TTL"] = "10"
-		# request.body = encrypted_data
-
-
-		# response = http.request(request)
-		# logger.info("output: #{response.body}")
-
-
 		redirect_to "/"
 	end
 

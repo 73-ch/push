@@ -66,7 +66,6 @@ class PushController < ApplicationController
 		action2 = params[:action2_button]
 		time = params[:time]
 		send_time = DateTime.new(time['time(1i)'].to_i, time['time(2i)'].to_i, time['time(3i)'].to_i, time['time(4i)'].to_i, time['time(5i)'].to_i, 0)
-		send_time -= 9.hours
 		logger.info "title: #{title}"
 		logger.info "body: #{body}"
 		logger.info "action1: #{action1}"

@@ -6,7 +6,7 @@ require 'openssl'
 namespace :push do
 	desc ""
 	task :send => :environment do
-		pushes = Push.where("send_time >= ?", DateTime.now - 24.hours)
+		pushes = Push.where("send_time >= ?", DateTime.now)
 		pushes.each do |push|
 			jwt_bn = OpenSSL::BN.new(Base64.urlsafe_decode64(push.jwt), 2)
 			jwt_key = OpenSSL::PKey::EC.new("prime256v1")

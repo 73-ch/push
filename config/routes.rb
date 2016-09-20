@@ -2,7 +2,6 @@ Rails.application.routes.draw do
 	root "push#index"
   get '/index' => "push#index"
   get '/push' => "push#push", defaults: {format: "js"}
-  get '/manifest' => 'push#manifest', defaults: {format: "json"}
   get "/new" => "push#new"
 
   post '/pushes' => "push#create"

@@ -21,7 +21,7 @@ namespace :push do
 			}
 			token = JWT.encode(payload, jwt_key, 'ES256')
 			pub_g = OpenSSL::PKey::EC::Group.new("prime256v1")
-			pub_bn = OpenSSL::BN.new(Base64.urlsafe_decode64("BF7Z276UXf5YdtMjqFbiPorm4_jVmvtI0dSY_HW5FkaxXVc-pnXHO70q65REzswHZ9bnvRKjd5V_-J87C2wAOF4="), 2)
+			pub_bn = OpenSSL::BN.new(Base64.urlsafe_decode64("BIwrAQUrFsrtKhZg-tafFp5l_NDNTqIAKImaUaQYV16-umLKbwDywO3fIbwzDg07_RgxRphZj9erP0BMcE9V0cE="), 2)
 			pub_p = OpenSSL::PKey::EC::Point.new(pub_g, pub_bn)
 			ecdsa_public = OpenSSL::PKey::EC.new("prime256v1")
 			ecdsa_public.public_key = pub_p

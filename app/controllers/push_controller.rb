@@ -17,12 +17,10 @@ class PushController < ApplicationController
 	def index
 		ecdsa_key = OpenSSL::PKey::EC.new('prime256v1')
 		ecdsa_key.generate_key
-		ecdsa_public = OpenSSL::PKey::EC.new(ecdsa_key)
-		ecdsa_public.private_key = nil
-		@public_key = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
+		@public_key = Base64.urlsafe_encode64(ecdsa_key.public_key.to_bn.to_s(2))
 		$private_key = Base64.urlsafe_encode64(ecdsa_key.private_key.to_s(2))
-		$p256ecdsa = Base64.urlsafe_encode64(ecdsa_public.public_key.to_bn.to_s(2))
-		logger.info ecdsa_public.public_key.to_bn.num_bytes
+		$p256ecdsa = Base64.urlsafe_encode64(ecdsa_key.public_key.to_bn.to_s(2))
+		logger.info ecdsa_key.public_key.to_bn.num_bytes
 		logger.info ecdsa_key.private_key.num_bytes
 	end
 
@@ -100,7 +98,7 @@ class PushController < ApplicationController
 
 		@push = Push.create(
 			jwt: $private_key,
-			crypto_key: "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))};p256ecdsa=#{$p256ecdsa}",
+			crypto_key: "keyid=p256dh;dh=#{Base64.urlsafe_encode64($s.public_key.to_bn.to_s(2))};p256ecdsa=#{$p256ecdsa.gsub("=", "")}",
 			encryption_data: Base64.urlsafe_encode64(encrypted_data),
 			end_point: $endpoint,
 			salt: "keyid=p256dh;salt=#{Base64.urlsafe_encode64(salt.to_bn.to_s(2))}",

@@ -21,12 +21,12 @@ namespace :push do
 			}
 			token = JWT.encode(payload, jwt_key, 'ES256')
 			pub_g = OpenSSL::PKey::EC::Group.new("prime256v1")
-			pub_bn = OpenSSL::BN.new(Base64.urlsafe_decode64("BNb7ipjjSq__BPYL0uMvy_PAzRYOdYsknV_Pa4GNd9vw-0NV69cXEJmvxkz_jr8g3xqfuxGi4Uf0X91d28IfyGA="), 2)
+			pub_bn = OpenSSL::BN.new(Base64.urlsafe_decode64("BF7Z276UXf5YdtMjqFbiPorm4_jVmvtI0dSY_HW5FkaxXVc-pnXHO70q65REzswHZ9bnvRKjd5V_-J87C2wAOF4="), 2)
 			pub_p = OpenSSL::PKey::EC::Point.new(pub_g, pub_bn)
 			ecdsa_public = OpenSSL::PKey::EC.new("prime256v1")
 			ecdsa_public.public_key = pub_p
-			decoded_token = JWT.decode token, ecdsa_public, true, { :algorithm => 'ES256' }
-			puts decoded_token
+			#decoded_token = JWT.decode token, ecdsa_public, true, { :algorithm => 'ES256' }
+			#puts decoded_token
 			puts Base64.decode64(token.split(".")[2]).length
 			uri = URI.parse("https://fcm.googleapis.com/fcm/send/#{push.end_point}")
 	    http = Net::HTTP.new(uri.host, uri.port)
